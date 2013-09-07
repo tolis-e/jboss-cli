@@ -87,17 +87,7 @@ if ((httpPort != '' && !httpPort.isNumber()) || (httpsPort != '' && !httpsPort.i
     println("Invalid Ports HTTP port: '" + httpPort + "' HTTPS port: '" + httpsPort + "'")
     System.exit(1)
 }
-else if (
-        (keyName != '' && (keyAlias == '' || keyPassword == '' || keyFile == '' || keyProtocol == ''))
-        ||
-        (keyAlias != '' && (keyName == '' || keyPassword == '' || keyFile == '' || keyProtocol == ''))
-        ||
-        (keyFile != '' && (keyAlias == '' || keyPassword == '' || keyName == '' || keyProtocol == ''))
-        ||
-        (keyProtocol != '' && (keyAlias == '' || keyPassword == '' || keyFile == '' || keyName == ''))
-        ||
-        (keyPassword != '' && (keyAlias == '' || keyFile == '' || keyName == '' || keyProtocol == ''))
-    )
+else if (keyPassword == '' || keyAlias == '' || keyFile == '' || keyName == '' || keyProtocol == '')
 {
     println("Invalid Keystore configuration name: '" + keyName + "' password: '" + keyPassword + "' alias: '" + keyAlias + "' file: '" + keyFile + "' protocol: '" + keyProtocol + "'")
     System.exit(1)
