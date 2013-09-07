@@ -1,5 +1,5 @@
 ## JBoss CLI
-Contains a Groovy JBoss CLI script to setup HTTP/HTTPS ports and install a certificate.
+Contains a Groovy JBoss CLI script to setup HTTP/HTTPS ports and enable SSL traffic on the Web connector.
 
 Execution:
 
