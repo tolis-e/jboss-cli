@@ -16,7 +16,7 @@
  */
 import org.jboss.as.cli.scriptsupport.*
 
-cliBuilder = new CliBuilder(usage: 'groovy -cp "./jboss-cli-client.jar" jboss-as-setup.groovy -[arguments]')
+cliBuilder = new CliBuilder(usage: 'groovy -cp "./jboss-cli-client.jar" jboss-as-setup.groovy')
 
 cliBuilder.with {
     h(longOpt: 'help', 'Help - Usage Information')  
