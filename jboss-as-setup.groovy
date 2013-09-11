@@ -49,84 +49,89 @@ else if (options.h)
 }
 else
 {
+    if (options.t || options.s || (options.n && options.f && options.a && options.w && options.l))
+    {
 
-    managementHost = options.m ? "${options.m}" : '127.0.0.1'
-    managementPort = options.p ? "${options.p}" : '9999'
-    httpPort = "${options.t}"
-    httpsPort = "${options.s}"
-    keyName = "${options.n}"
-    keyFile = "${options.f}"
-    keyAlias = "${options.a}"
-    keyPassword = "${options.w}"
-    keyProtocol = "${options.l}"
-  
-    //println( "managementHost: '" + managementHost + "' managementPort: '" + managementPort + "' httpPort: '" + httpPort + "' httpsPort: '" + httpsPort + "' keyName: '" + keyName + "' keyFile: '" + keyFile + "' keyAlias: '" + keyAlias + "' keyPassword: '" + keyPassword + "' keyProtocol: '" + keyProtocol + "'")
+        managementHost = options.m ? "${options.m}" : '127.0.0.1'
+        managementPort = options.p ? "${options.p}" : '9999'
+        httpPort = "${options.t}"
+        httpsPort = "${options.s}"
+        keyName = "${options.n}"
+        keyFile = "${options.f}"
+        keyAlias = "${options.a}"
+        keyPassword = "${options.w}"
+        keyProtocol = "${options.l}"
 
-    cli = CLI.newInstance()
-    exception = null
-    try {
-        cli.connect(managementHost + ":" + managementPort)
+        cli = CLI.newInstance()
+        exception = null
+        try {
+            cli.connect(managementHost + ":" + managementPort)
 
-        if (options.t)
-        {
-            cli.cmd("cd socket-binding-group=standard-sockets/socket-binding=http")
-            println("Changing HTTP port:")
-            result = cli.cmd(":write-attribute(name=port,value=" + httpPort + ")")
-            cli.cmd("cd ../..")
-            response = result.getResponse()
-            println(response)
-        }
-    
-        if (options.s)
-        {
-            cli.cmd("cd socket-binding-group=standard-sockets/socket-binding=https")
-            println("Changing HTTPS port:")
-            result = cli.cmd(":write-attribute(name=port,value=" + httpsPort + ")")
-            cli.cmd("cd ../..")
-            response = result.getResponse()
-            println(response)
-        }
-
-        if (options.n && options.f && options.a && options.w && options.l)
-        {
-            println("Checking if HTTPS connector already exists:")
-            cli.cmd("cd subsystem=web")
-            result = cli.cmd(":read-children-names(child-type=connector)")
-            response = result.getResponse()
-            println(response)
-            if (response.asString().contains("https"))
+            if (options.t)
             {
-                println("Removing existing HTTPS connector:")
-                result = cli.cmd("./connector=https:remove")
+                cli.cmd("cd socket-binding-group=standard-sockets/socket-binding=http")
+                println("Changing HTTP port:")
+                result = cli.cmd(":write-attribute(name=port,value=" + httpPort + ")")
+                cli.cmd("cd ../..")
                 response = result.getResponse()
                 println(response)
             }
-            println("Response from creating https connector:")
-            result = cli.cmd("./connector=https:add(name=\"https\", protocol=\"HTTP/1.1\", scheme=\"https\", socket-binding=\"https\")")
-            response = result.getResponse()
-            println(response)
+    
+            if (options.s)
+            {
+                cli.cmd("cd socket-binding-group=standard-sockets/socket-binding=https")
+                println("Changing HTTPS port:")
+                result = cli.cmd(":write-attribute(name=port,value=" + httpsPort + ")")
+                cli.cmd("cd ../..")
+                response = result.getResponse()
+                println(response)
+            }   
+
+            if (options.n && options.f && options.a && options.w && options.l)
+            {
+                println("Checking if HTTPS connector already exists:")
+                cli.cmd("cd subsystem=web")
+                result = cli.cmd(":read-children-names(child-type=connector)")
+                response = result.getResponse()
+                println(response)
+                if (response.asString().contains("https"))
+                {
+                    println("Removing existing HTTPS connector:")
+                    result = cli.cmd("./connector=https:remove")
+                    response = result.getResponse()
+                    println(response)
+                }
+                println("Response from creating https connector:")
+                result = cli.cmd("./connector=https:add(name=\"https\", protocol=\"HTTP/1.1\", scheme=\"https\", socket-binding=\"https\")")
+                response = result.getResponse()
+                println(response)
          
-            println("Response from creating ssl element:")
-            cli.cmd("cd connector=https")
-            result = cli.cmd("./ssl=configuration:add(name=\"" + keyName + "\", key-alias=\"" + keyAlias + "\", password=\"" + keyPassword + "\", certificate-key-file=\"" + keyFile + "\", protocol=\"" + keyProtocol + "\")")
+                println("Response from creating ssl element:")
+                cli.cmd("cd connector=https")
+                result = cli.cmd("./ssl=configuration:add(name=\"" + keyName + "\", key-alias=\"" + keyAlias + "\", password=\"" + keyPassword + "\", certificate-key-file=\"" + keyFile + "\", protocol=\"" + keyProtocol + "\")")
+                response = result.getResponse()
+                println(response)
+
+                cli.cmd("cd ../..")
+            }
+ 
+            reloadCmd = ":reload"
+
+            result = cli.cmd(reloadCmd)
             response = result.getResponse()
             println(response)
 
-            cli.cmd("cd ../..")
+        } catch (Exception ex) {
+            println(ex)
+            exception = ex
+        } finally { 
+            try { cli.disconnect() } catch (Exception ignore) {}
+            System.exit(exception == null ? 0 : 1)        
         }
- 
-        reloadCmd = ":reload"
-
-        result = cli.cmd(reloadCmd)
-        response = result.getResponse()
-        println(response)
-
-    } catch (Exception ex) {
-        println(ex)
-        exception = ex
-    } finally { 
-        try { cli.disconnect() } catch (Exception ignore) {}
-        System.exit(exception == null ? 0 : 1)        
     }
+    else
+    {
+        System.exit(0)
+    }   
 }
 
