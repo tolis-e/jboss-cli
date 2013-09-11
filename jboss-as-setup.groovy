@@ -33,7 +33,16 @@ cliBuilder.with {
 
 options = cliBuilder.parse(args)
 
-if (options.h) 
+if (options == null)
+{
+    System.exit(1)
+}
+else if ((options.t && !"${options.t}".isNumber()) || (options.s && !"${options.s}".isNumber()))
+{
+    println("Invalid Ports: " + (options.t ? "HTTP Port: '${options.t}'" : "") + (options.s ? " HTTPS Port: '${options.s}'" : ""))
+    System.exit(1)
+}
+else if (options.h) 
 {
     cliBuilder.usage()
     System.exit(0)
