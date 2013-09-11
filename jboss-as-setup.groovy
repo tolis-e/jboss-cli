@@ -60,7 +60,7 @@ else
     keyPassword = "${options.w}"
     keyProtocol = "${options.l}"
   
-    println( "managementHost: '" + managementHost + "' managementPort: '" + managementPort + "' httpPort: '" + httpPort + "' httpsPort: '" + httpsPort + "' keyName: '" + keyName + "' keyFile: '" + keyFile + "' keyAlias: '" + keyAlias + "' keyPassword: '" + keyPassword + "' keyProtocol: '" + keyProtocol + "'")
+    //println( "managementHost: '" + managementHost + "' managementPort: '" + managementPort + "' httpPort: '" + httpPort + "' httpsPort: '" + httpsPort + "' keyName: '" + keyName + "' keyFile: '" + keyFile + "' keyAlias: '" + keyAlias + "' keyPassword: '" + keyPassword + "' keyProtocol: '" + keyProtocol + "'")
 
     cli = CLI.newInstance()
     exception = null
