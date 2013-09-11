@@ -16,100 +16,49 @@
  */
 import org.jboss.as.cli.scriptsupport.*
 
-httpPort = ''
-httpsPort = ''
-keyName = ''
-keyAlias = ''
-keyFile = ''
-keyProtocol = ''
-keyPassword = ''
-managementHost = '127.0.0.1'
-managementPort = '9999'
-for (i in args) 
-{
+cliBuilder = new CliBuilder(usage: 'groovy -cp "./jboss-cli-client.jar" jboss-as-setup.groovy -[arguments]')
 
-    argsArr = i.split("=")
-    val = argsArr != null && argsArr.length == 2 ? argsArr[1] : ''
-    if ((i.startsWith('-managementHost=') || i.startsWith('managementHost=')) && val != '')
-    {
-        managementHost = val
-    }
-    if ((i.startsWith('-managementPort=') || i.startsWith('managementPort=')) && val != '')
-    {
-        managementPort = val
-    }
-    if (i.startsWith('-httpPort=') || i.startsWith('httpPort='))
-    {
-        httpPort = val
-    }
-    else if (i.startsWith('-httpsPort=') || i.startsWith('httpsPort='))
-    {
-        httpsPort = val
-    }
-    else if (i.startsWith('-keyName') || i.startsWith('keyName'))
-    {
-        keyName = val
-    }
-    else if (i.startsWith('-keyAlias') || i.startsWith('keyAlias'))
-    {
-        keyAlias = val
-    }
-    else if (i.startsWith('-keyPassword') || i.startsWith('keyPassword'))
-    {
-        keyPassword = val
-    }
-    else if (i.startsWith('-keyFile') || i.startsWith('keyFile'))
-    {
-        keyFile = val
-    }
-    else if (i.startsWith('-keyProtocol') || i.startsWith('keyProtocol'))
-    {
-        keyProtocol = val
-    }
-    else if (i.startsWith('--help') || i.startsWith('-help'))
-    {
-        println("USAGE:")
-        println("       -managementHost=XXXX   : management host for establishing connection")
-        println("       -managementPort=XXXX   : management port for establishing connection")
-        println("       -httpPort=XXXX   : setup the HTTP port")
-        println("       -httpsPort=XXXX  : setup the HTTPS port")
-        println("       -keyName=XXXX    : setup the ssl element name")
-        println("       -keyAlias=XXXX   : setup the key alias")
-        println("       -keyPassword=XXXX   : setup the key password")
-        println("       -keyFile=XXXX    : setup the keystore file")
-        println("       -keyProtocol=XXX : setup the SSL protocol")
-        System.exit(0)
-    }
+cliBuilder.with {
+    h(longOpt: 'help', 'Help - Usage Information')  
+    m(argName:'managementHost', args: 1, longOpt: 'managementHost','management host for establishing connection')
+    p(argName:'managementPort', args: 1, longOpt: 'managementPort','management port for establishing connection')
+    t(argName:'httpPort', args: 1, longOpt: 'httpPort','setup the HTTP port')
+    s(argName:'httpsPort', args: 1, longOpt: 'httpsPort','setup the HTTPS port')
+    n(argName:'keyName', args: 1, longOpt: 'keyStoreName','setup the ssl element name')
+    a(argName:'keyAlias', args: 1, longOpt: 'keyStoreAlias','setup the key alias')
+    f(argName:'keyFile', args: 1, longOpt: 'keyStoreFile','setup the keystore file')
+    w(argName:'keyPassphrase', args: 1, longOpt: 'keyStorePassphrase','setup the key password')
+    l(argName:'sslProtocol', args: 1, longOpt: 'SSL protocol','setup the SSL protocol')
 }
 
-if ((httpPort != '' && !httpPort.isNumber()) || (httpsPort != '' && !httpsPort.isNumber()))
+options = cliBuilder.parse(args)
+
+if (options.h) 
 {
-    println("Invalid Ports HTTP port: '" + httpPort + "' HTTPS port: '" + httpsPort + "'")
-    System.exit(1)
-}
-else if (
-        (keyName != '' && (keyAlias == '' || keyPassword == '' || keyFile == '' || keyProtocol == ''))
-        ||
-        (keyAlias != '' && (keyName == '' || keyPassword == '' || keyFile == '' || keyProtocol == ''))
-        ||
-        (keyFile != '' && (keyAlias == '' || keyPassword == '' || keyName == '' || keyProtocol == ''))
-        ||
-        (keyProtocol != '' && (keyAlias == '' || keyPassword == '' || keyFile == '' || keyName == ''))
-        ||
-        (keyPassword != '' && (keyAlias == '' || keyFile == '' || keyName == '' || keyProtocol == ''))
-    )
-{
-    println("Invalid Keystore configuration name: '" + keyName + "' password: '" + keyPassword + "' alias: '" + keyAlias + "' file: '" + keyFile + "' protocol: '" + keyProtocol + "'")
-    System.exit(1)
+    cliBuilder.usage()
+    System.exit(0)
 }
 else
 {
+
+    managementHost = options.m ? "${options.m}" : '127.0.0.1'
+    managementPort = options.p ? "${options.p}" : '9999'
+    httpPort = "${options.t}"
+    httpsPort = "${options.s}"
+    keyName = "${options.n}"
+    keyFile = "${options.f}"
+    keyAlias = "${options.a}"
+    keyPassword = "${options.w}"
+    keyProtocol = "${options.l}"
+  
+    println( "managementHost: '" + managementHost + "' managementPort: '" + managementPort + "' httpPort: '" + httpPort + "' httpsPort: '" + httpsPort + "' keyName: '" + keyName + "' keyFile: '" + keyFile + "' keyAlias: '" + keyAlias + "' keyPassword: '" + keyPassword + "' keyProtocol: '" + keyProtocol + "'")
+
     cli = CLI.newInstance()
     exception = null
     try {
         cli.connect(managementHost + ":" + managementPort)
 
-        if (httpPort != '')
+        if (options.t)
         {
             cli.cmd("cd socket-binding-group=standard-sockets/socket-binding=http")
             println("Changing HTTP port:")
@@ -119,7 +68,7 @@ else
             println(response)
         }
     
-        if (httpsPort != '')
+        if (options.s)
         {
             cli.cmd("cd socket-binding-group=standard-sockets/socket-binding=https")
             println("Changing HTTPS port:")
@@ -129,27 +78,27 @@ else
             println(response)
         }
 
-        if (keyName != '' && keyAlias != '' && keyPassword != '' && keyFile != '' && keyProtocol != '')
+        if (options.n && options.f && options.a && options.w && options.l)
         {
-            cli.cmd("cd subsystem=web/connector=https")
-
             println("Checking if HTTPS connector already exists:")
-            result = cli.cmd(":read-attribute(name=name)")
+            cli.cmd("cd subsystem=web")
+            result = cli.cmd(":read-children-names(child-type=connector)")
             response = result.getResponse()
             println(response)
-            if (!response.asString().contains("undefined"))
+            if (response.asString().contains("https"))
             {
                 println("Removing existing HTTPS connector:")
-                result = cli.cmd(":remove")
+                result = cli.cmd("./connector=https:remove")
                 response = result.getResponse()
                 println(response)
             }
             println("Response from creating https connector:")
-            result = cli.cmd(":add(name=\"https\", protocol=\"HTTP/1.1\", scheme=\"https\", socket-binding=\"https\")")
+            result = cli.cmd("./connector=https:add(name=\"https\", protocol=\"HTTP/1.1\", scheme=\"https\", socket-binding=\"https\")")
             response = result.getResponse()
             println(response)
          
             println("Response from creating ssl element:")
+            cli.cmd("cd connector=https")
             result = cli.cmd("./ssl=configuration:add(name=\"" + keyName + "\", key-alias=\"" + keyAlias + "\", password=\"" + keyPassword + "\", certificate-key-file=\"" + keyFile + "\", protocol=\"" + keyProtocol + "\")")
             response = result.getResponse()
             println(response)
@@ -171,3 +120,4 @@ else
         System.exit(exception == null ? 0 : 1)        
     }
 }
+
